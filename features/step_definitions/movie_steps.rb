@@ -1,16 +1,11 @@
 # Add a declarative step here for populating the DB with movies.
 
 Given /the following movies exist/ do |movies_table|
-  #Movie.delete_all
   movies_table.hashes.each do |movie|
     # each returned element will be a hash whose key is the table header.
     # you should arrange to add that movie to the database here.
 	
     Movie.create!(movie)
-	#new_movie.title = movie["title"]
-	#new_movie.rating = movie["rating"]
-	#new_movie.release_date = movie["release_date"]
-	#new_movie.save
   end
 end
 
@@ -23,8 +18,27 @@ Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   flunk "Unimplemented"
 end
 
+Then /^I should (only|not) see movies with the following ratings: (.*)$/ do |visible, rating_list|
+  should_see_movies = (visible == "only")
+  ratings = rating_list.split ', '
+  
+  # subtract 1 to account for the table header row
+  rowCount = all("table#movies tr").count - 1
+  
+  if should_see_movies
+    movies = Movie.find(:all, :conditions => [ "rating IN (?)", ratings ])
+  else # should not see these movies, so get a list of all movies NOT IN the given movie list; those are the movies that should be displayed
+    movies = Movie.find(:all, :conditions => [ "rating NOT IN (?)", ratings ])
+  end
+  
+  assert movies.count == rowCount , "Expected there to be #{movies.count} movies, not #{rowCount}"
+end
+
 Then /I should see all of the movies/ do
-  flunk "Unimplemented"
+  # subtract 1 to account for the table header row
+  rowCount = all("table#movies tr").count - 1
+  
+  assert Movie.count == rowCount, "Expected there to be #{Movie.count} movies, not #{rowCount}"
 end
 
 # Make it easier to express checking or unchecking several boxes at once
