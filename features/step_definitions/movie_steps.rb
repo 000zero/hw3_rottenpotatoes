@@ -15,7 +15,13 @@ end
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   #  ensure that that e1 occurs before e2.
   #  page.content  is the entire content of the page as a string.
-  flunk "Unimplemented"
+  content = page.body.to_s
+  
+  # get the position of the movie names in the content string
+  e1_index = content.index e1
+  e2_index = content.index e2
+  
+  assert e1_index < e2_index, "Expected to see #{e1} before #{e2} in the movie list"
 end
 
 Then /^I should (only|not) see movies with the following ratings: (.*)$/ do |visible, rating_list|
